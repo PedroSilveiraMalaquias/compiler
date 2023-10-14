@@ -1,4 +1,4 @@
-import { Tokens } from "./Tokens";
+import { Tokens } from "./utils";
 
 const reservedWords = [
   Tokens.ARRAY,
@@ -37,14 +37,20 @@ const isSpace = (c: string): boolean =>
   c === "\v";
 
 export class LexicalAnalyzer {
+  private fileText: string;
   private readerPosi: number;
   private readerChar: string;
-  private line: number = 1;
+  public line: number = 1;
   private ch: number = 1;
 
-  constructor(private fileText: string) {
+  constructor(fileText: string) {
+    this.setup(fileText);
+  }
+
+  setup(fileText: string) {
     this.readerPosi = 0;
     this.readerChar = fileText[0];
+    this.fileText = fileText;
   }
 
   searchReservedWords(word: string): Tokens {
@@ -197,15 +203,21 @@ export class LexicalAnalyzer {
     return token;
   }
 
-  run() {
+  validateToken(token?: Tokens | null): boolean {
+    if (!token || token === Tokens.UNKNOWN) {
+      console.error(
+        `Character ${this.ch + 1} not expected in the line ${this.line}`
+      );
+      return false;
+    }
+    return true;
+  }
+
+  execute() {
     let currToken: Tokens = this.getToken();
     while (currToken !== Tokens.EOF) {
-      if (currToken === Tokens.UNKNOWN) {
-        console.error(
-          `Character ${this.ch + 1} not expected in the line ${this.line}`
-        );
-        return;
-      }
+      const isValidToken = this.validateToken(currToken);
+      if (!isValidToken) return;
       currToken = this.getToken();
     }
     console.log("No lexical errors.");
