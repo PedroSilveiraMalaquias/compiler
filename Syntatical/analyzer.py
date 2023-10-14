@@ -65,3 +65,4 @@ class Syntatical_Analysis:
                 self.syntaticalError = True
                 print("Sintaxe Error in line " + str(self.lexical.line))
                 break
+

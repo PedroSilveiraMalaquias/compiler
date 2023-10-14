@@ -1,6 +1,6 @@
 function main(arg:integer):integer
 {
-	var x:integer &;
+	var x:integer;
 	var y:integer;
 	var z:integer;
 	var w:integer;
