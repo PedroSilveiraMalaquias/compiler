@@ -21,5 +21,7 @@ fs.readFile(codeFilePath, "utf8", (error, data) => {
     const synctaticAnalyzer = new SyntacticAnalyzer(lexicalAnalyzer, data, [
       [],
     ]);
+
+    synctaticAnalyzer.execute();
   });
 });

@@ -42,9 +42,30 @@ export class LexicalAnalyzer {
   private readerChar: string;
   public line: number = 1;
   private ch: number = 1;
+  public tokenId: number | null;
+  private v_Ctes: string[] = [];
+  private identifiers: { [key: string]: number } = {};
+  private count: number = 0;
 
   constructor(fileText: string) {
     this.setup(fileText);
+  }
+
+  addCte(c: string): number {
+    this.v_Ctes.push(c);
+    return this.v_Ctes.length - 1;
+  }
+
+  getCte(c: string): number {
+    return this.v_Ctes.indexOf(c);
+  }
+
+  searchName(name: string): number {
+    if (!this.identifiers[name]) {
+      this.identifiers[name] = this.count;
+      this.count++;
+    }
+    return this.identifiers[name];
   }
 
   setup(fileText: string) {
@@ -87,22 +108,33 @@ export class LexicalAnalyzer {
         this.readNextChar();
       }
       token = this.searchReservedWords(tokenAux);
+      if (token === Tokens.ID) {
+        this.tokenId = this.searchName(tokenAux);
+      }
     } else if (isDigit(this.readerChar)) {
+      let num: string = "";
       while (isDigit(this.readerChar)) {
+        num += this.readerChar;
         this.readNextChar();
       }
       token = Tokens.NUMERAL;
+      this.tokenId = this.addCte(num);
     } else if (this.readerChar === '"') {
+      let str: string = this.readerChar;
       this.readNextChar();
       while (this.readerChar !== '"') {
+        str += this.readerChar;
         this.readNextChar();
       }
+      str += this.readerChar;
       this.readNextChar();
       token = Tokens.STRING;
+      this.tokenId = this.addCte(str);
     } else {
       if (this.readerChar === "'") {
         this.readNextChar();
         token = Tokens.CHARACTER;
+        this.tokenId = this.addCte(this.readerChar);
         this.readNextChar(2);
       } else if (this.readerChar === ":") {
         this.readNextChar();
