@@ -1,0 +1,22 @@
+{
+	"printWidth": 100,
+	"useTabs": true,
+	"semi": true,
+	"singleQuote": true,
+	"trailingComma": "all",
+	"bracketSpacing": true,
+	"arrowParens": "always",
+	"endOfLine": "lf",
+	"overrides": [
+		{
+			"files": [
+				"src/forms/nft/OpenSeaBuyRequest.js",
+				"src/daos/OpenSeaOrdersDao.js",
+				"src/controllers/OpenSeaOrdersController.js"
+			],
+			"options": {
+				"printWidth": 100
+			}
+		}
+	]
+}

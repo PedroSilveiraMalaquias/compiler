@@ -8,7 +8,6 @@ name = ""
 n = ""
 rLabel = ""
 
-hasErr = False
 StackSem = []
 
 
