@@ -18,7 +18,7 @@ export class Var implements TokenClass {
 export class FUNCTION implements TokenClass {
 	constructor(
 		public retType?: BlockElement,
-		public params?: TokenClass,
+		public params?: BlockElement,
 		public index?: number,
 		public nParams?: number,
 		public nVars?: number,
@@ -81,7 +81,7 @@ export class LV implements TokenClass {
 }
 
 export class MC implements TokenClass {
-	constructor(public type?: BlockElement, public param?: TokenClass, public err?: boolean) {}
+	constructor(public type?: BlockElement, public param?: BlockElement, public err?: boolean) {}
 }
 
 export class MT implements TokenClass {
@@ -100,6 +100,15 @@ export class MA implements TokenClass {
 	constructor(public label?: string) {}
 }
 
+export class LE implements TokenClass {
+	constructor(
+		public type?: BlockElement,
+		public param?: TokenClass,
+		public err?: boolean,
+		public n?: number,
+	) {}
+}
+
 export class LI implements TokenClass {
 	constructor(public list?: TokenClass) {}
 }
@@ -109,7 +118,7 @@ export class DC implements TokenClass {
 }
 
 export class LP implements TokenClass {
-	constructor(public list?: TokenClass) {}
+	constructor(public list?: BlockElement) {}
 }
 
 export class TRUE implements TokenClass {

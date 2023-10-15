@@ -97,7 +97,7 @@ def Semantic_Analysis(lexical, rule):
     #    t = T_._.type
     #    LI_ = StackSem.pop()
     #    p = LI_._.list
-    #    n = curFunction._.nVars
+    #     curFunction._.nVars
     #    while p != None and p.eKind == NO_KIND_DEF_:
     #        p.eKind = VAR_
     #        p._ = Var(t,n,T_.nSize)
@@ -429,6 +429,7 @@ def Semantic_Analysis(lexical, rule):
         if not CheckTypes(t, int_):
             Error(lexical, ERR_INVALID_TYPE)
         F_ = t_attrib(F, None, F(int_))
+        #! NÃO ADICIONA NA STACK???
         generated_code.write("\tDUP\n\tDUP\n\tDE_REF 1"+"\n")
         generated_code.write("\tINC\n\tSTORE REF 1\n\tDE_REF 1"+"\n")
 

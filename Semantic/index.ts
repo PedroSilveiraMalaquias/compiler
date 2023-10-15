@@ -5,7 +5,9 @@ import {
 	NotArrayError,
 	NotStructError,
 	NotVarError,
+	ParamTypeError,
 	RedclError,
+	TooManyArgsError,
 	TypeMisMatchError,
 } from './Errors';
 import { LexicalAnalyzer } from '../Lexical';
@@ -38,6 +40,7 @@ import {
 	Type,
 	Var,
 	MC,
+	LE,
 } from './tokenClasses';
 import { States } from '../Syntactic/utils';
 import {
@@ -55,7 +58,7 @@ export class SemanticAnalyzer {
 	private scope: Scope;
 	public currFunction: BlockElement;
 	tokenId: number | null = null;
-	n: string = '';
+	n: number = 0;
 	rLael: string = '';
 
 	stack: TokenAttribute[] = [];
@@ -598,7 +601,26 @@ export class SemanticAnalyzer {
 				);
 			}
 		} else if (rule === Rules.LE_E_RULE) {
-			// fazer esses
+			const e = this.stack.pop();
+			const mc = this.stack[this.stack.length - 1].obj as MC;
+
+			if (!e || !mc) return;
+			const type = (e.obj as E).type;
+			const le = new TokenAttribute(States.LE, new LE(undefined, undefined, mc.err, 1));
+			if (!mc.err) {
+				const blockElement = mc.param;
+				if (!blockElement) {
+					new TooManyArgsError().print();
+					(le.obj as LE).err = true;
+				} else {
+					if (!type || !TypeHelper.checkTypes(type, (blockElement.obj as Param).type!)) {
+						new ParamTypeError().print();
+					}
+					(le.obj as LE).param = blockElement.next;
+					(le.obj as LE).n = this.n + 1;
+				}
+			}
+			this.stack.push(le);
 		} else if (rule === Rules.LE_LE_RULE) {
 		} else if (rule === Rules.F_IDU_MC_RULE) {
 		} else if (rule === Rules.MT_RULE) {
