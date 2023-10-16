@@ -2,7 +2,7 @@ import { BlockElement } from '../Semantic/tokenClasses';
 
 export class Scope {
 	private blocks: BlockElement[] = [];
-	private blockTail: BlockElement[];
+	private blockTail: BlockElement[] = [];
 	private currLevel: number;
 	private labelId: number;
 	public nFuncs: number = 0;
@@ -14,7 +14,7 @@ export class Scope {
 
 	search(id: number): BlockElement | null {
 		let block: BlockElement | null = this.blocks[this.currLevel];
-		while (block !== null) {
+		while (block) {
 			if (block.id === id) {
 				return block;
 			} else {

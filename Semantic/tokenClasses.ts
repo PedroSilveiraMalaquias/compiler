@@ -20,7 +20,7 @@ export class FUNCTION implements TokenClass {
 		public retType?: BlockElement,
 		public params?: BlockElement,
 		public index?: number,
-		public nParams?: number,
+		public nParams: number = 0,
 		public nVars?: number,
 	) {}
 }
@@ -85,19 +85,19 @@ export class MC implements TokenClass {
 }
 
 export class MT implements TokenClass {
-	constructor(public label?: string) {}
+	constructor(public label?: number) {}
 }
 
 export class ME implements TokenClass {
-	constructor(public label?: string) {}
+	constructor(public label?: number) {}
 }
 
 export class MW implements TokenClass {
-	constructor(public label?: string) {}
+	constructor(public label?: number) {}
 }
 
 export class MA implements TokenClass {
-	constructor(public label?: string) {}
+	constructor(public label?: number) {}
 }
 
 export class LE implements TokenClass {
@@ -105,7 +105,7 @@ export class LE implements TokenClass {
 		public type?: BlockElement,
 		public param?: TokenClass,
 		public err?: boolean,
-		public n?: number,
+		public n: number = 0,
 	) {}
 }
 

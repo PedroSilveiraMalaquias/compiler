@@ -7,6 +7,7 @@ import {
 	NotVarError,
 	ParamTypeError,
 	RedclError,
+	TooFewArgsError,
 	TooManyArgsError,
 	TypeMisMatchError,
 } from './Errors';
@@ -41,6 +42,9 @@ import {
 	Var,
 	MC,
 	LE,
+	MT,
+	ME,
+	MW,
 } from './tokenClasses';
 import { States } from '../Syntactic/utils';
 import {
@@ -57,23 +61,23 @@ export class SemanticAnalyzer {
 	private fileText: string;
 	private scope: Scope;
 	public currFunction: BlockElement;
+	public ruleLabel: number | null = null;
 	tokenId: number | null = null;
 	n: number = 0;
-	rLael: string = '';
 
 	stack: TokenAttribute[] = [];
 	constructor(lexicalAnalyzer: LexicalAnalyzer, fileText: string) {
-		this.setup(fileText);
 		this.lexicalAnalyzer = lexicalAnalyzer;
 		this.fileText = fileText;
 		this.scope = new Scope();
+		this.setup(fileText);
 	}
 
 	setup(fileText: string) {
 		this.lexicalAnalyzer.setup(fileText);
 	}
 
-	execute(rule: number) {
+	execute(rule: number): void {
 		let blockElement: BlockElement | null = null;
 
 		if (rule === Rules.IDD_RULE) {
@@ -622,18 +626,73 @@ export class SemanticAnalyzer {
 			}
 			this.stack.push(le);
 		} else if (rule === Rules.LE_LE_RULE) {
+			const e = this.stack.pop();
+			const le1 = this.stack.pop()?.obj as LE;
+			if (!e || !le1) return;
+			const le0 = new TokenAttribute(
+				States.LE,
+				new LE(undefined, undefined, (le1 as LE).err, (le1 as LE).n),
+			);
+			if (!le1.err) {
+				const blockElement = le1.param as BlockElement;
+				if (!blockElement) {
+					new TooManyArgsError().print();
+					(le0.obj as LE).err = true;
+				} else {
+					if (!TypeHelper.checkTypes((e.obj as E).type!, (blockElement.obj as Param).type!)) {
+						new ParamTypeError().print();
+					}
+					(le0.obj as LE).param = blockElement.next;
+					(le0.obj as LE).n = this.n + 1;
+				}
+			}
+			this.stack.push(le0);
 		} else if (rule === Rules.F_IDU_MC_RULE) {
-		} else if (rule === Rules.MT_RULE) {
-		} else if (rule === Rules.ME_RULE) {
-		} else if (rule === Rules.MW_RULE) {
-		} else if (rule === Rules.M_BREAK_RULE) {
-		} else if (rule === Rules.M_CONTINUE_RULE) {
-		} else if (rule === Rules.M_E_SEMICOLON) {
-		} else {
-			// TODO: add log here
-			return false;
-		}
+			const le = this.stack.pop();
+			const mc = this.stack.pop();
+			const idu = this.stack.pop();
+			if (!le || !mc || !idu) return;
 
-		return true;
+			const f = (idu.obj as BlockElement).obj as FUNCTION;
+			const tokenAttribute = new TokenAttribute(States.F, new F((mc.obj as MC).type));
+
+			const leObj = (le.obj as LE)!;
+
+			if (!leObj.err) {
+				if (0 <= leObj.n - 1 && leObj.n - 1 < f.nParams) {
+					new TooFewArgsError().print();
+				} else if (leObj.n - 1 > f.nParams) {
+					new TooManyArgsError().print();
+				}
+			}
+			this.stack.push(tokenAttribute);
+		} else if (rule === Rules.MT_RULE) {
+			this.ruleLabel = this.scope.newLabel();
+			const mt = new TokenAttribute(States.MT, new MT(this.ruleLabel));
+			this.stack.push(mt);
+		} else if (rule === Rules.ME_RULE) {
+			this.ruleLabel = this.scope.newLabel();
+			const me = new TokenAttribute(States.ME, new ME(this.ruleLabel));
+			this.stack.push(me);
+		} else if (rule === Rules.MW_RULE) {
+			const mw = this.stack.pop();
+			if (!mw) return;
+			this.ruleLabel = this.scope.newLabel();
+			(mw.obj as MW).label = this.ruleLabel;
+			this.stack.push(mw);
+		} else if (rule === Rules.M_BREAK_RULE) {
+			const mt = this.stack[this.stack.length - 1].obj as MT;
+		} else if (rule === Rules.M_CONTINUE_RULE) {
+			return;
+		} else if (rule === Rules.M_E_SEMICOLON) {
+			const e = this.stack.pop();
+			const lv = this.stack.pop();
+			if (!e || !lv) return;
+			if (!TypeHelper.checkTypes((e.obj as E).type!, (lv.obj as LV).type!)) {
+				new TypeMisMatchError().print();
+			}
+			const e0 = new TokenAttribute(States.E, new F((e.obj as E).type));
+			this.stack.push(e0);
+		}
 	}
 }
