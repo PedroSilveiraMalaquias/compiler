@@ -67,6 +67,11 @@ export class LexicalAnalyzer {
 		this.readerPosi = 0;
 		this.readerChar = fileText[0];
 		this.fileText = fileText;
+		this.line = 1;
+		this.ch = 1;
+		this.v_Ctes = [];
+		this.identifiers = {};
+		this.count = 0;
 	}
 
 	searchReservedWords(word: string): Tokens {

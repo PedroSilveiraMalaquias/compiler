@@ -4,7 +4,7 @@ import { SyntacticAnalyzer } from './Syntactic';
 import { SemanticAnalyzer } from './Semantic/index';
 import { parse } from 'csv-parse';
 
-const codeFilePath = './codigo-teste-2.ssl';
+const codeFilePath = './test-code-1.xpto';
 const tableFilePath = './action_table.csv';
 
 fs.readFile(codeFilePath, 'utf8', (error, data) => {
@@ -30,7 +30,6 @@ fs.readFile(codeFilePath, 'utf8', (error, data) => {
 		}
 
 		// Execute the synctatic analyzer (witch will also execute the lexical analyzer and the semantic analyzer)
-		// FIXME: transform the aData in array of array of strings
 		const semanticAnalyzer = new SemanticAnalyzer(lexicalAnalyzer, data);
 		const synctaticAnalyzer = new SyntacticAnalyzer(
 			lexicalAnalyzer,

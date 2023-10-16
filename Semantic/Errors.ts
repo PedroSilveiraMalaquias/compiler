@@ -1,14 +1,17 @@
 export class SemanticError extends Error {
-	constructor(private code: string, msg?: string) {
-		super(msg);
+	constructor(private code: string, public message: string) {
+		super(message);
 		Object.getOwnPropertyNames(SemanticError.prototype).forEach((key: string) => {
 			if (key !== 'constructor') {
 				this[key] = this[key].bind(this);
 			}
 		});
 	}
-	print() {
-		console.error(`${this.code}: ${super.message || 'unknown error'}`);
+	print(line?: number) {
+		if (line) {
+			console.log(`Line: ${line} - `);
+		}
+		console.error(`${this.code}: ${this.message || 'unknown error'}`);
 	}
 }
 

@@ -74,6 +74,7 @@ export class SyntacticAnalyzer {
 				}
 			}
 		} catch (err) {
+			console.log(err);
 			console.log(`Sintaxe Error in line ${this.lexicalAnalyzer.line}`);
 			return;
 		}

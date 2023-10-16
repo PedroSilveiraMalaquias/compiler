@@ -84,7 +84,7 @@ export class SemanticAnalyzer {
 			this.tokenId = this.lexicalAnalyzer.tokenId;
 			if (!this.tokenId) return;
 			blockElement = this.scope.search(this.tokenId);
-			if (blockElement) new RedclError().print();
+			if (blockElement) new RedclError().print(this.lexicalAnalyzer.line);
 			else {
 				blockElement = this.scope.define(this.tokenId);
 			}
@@ -96,7 +96,7 @@ export class SemanticAnalyzer {
 			blockElement = this.scope.find(this.tokenId);
 			if (!blockElement) {
 				blockElement = this.scope.define(this.tokenId);
-				new NoDeclError().print();
+				new NoDeclError().print(this.lexicalAnalyzer.line);
 			}
 			this.stack.push(new TokenAttribute(States.IDU, blockElement));
 		} else if (rule === Rules.ID_RULE) {
@@ -216,7 +216,8 @@ export class SemanticAnalyzer {
 			const type = this.stack.pop();
 			const idd = this.stack.pop();
 			if (!type || !idd || !idd.obj) return;
-			const blockElement = (idd.obj as BlockElement).obj as BlockElement;
+			const blockElement = (idd.obj as BlockElement)?.obj as BlockElement;
+			if (!blockElement) return;
 			blockElement.kind = KindEnum.PARAM;
 			blockElement.obj = new Param((type.obj as T).type, 0, type.size || 0);
 			this.stack.push(new TokenAttribute(States.LP, new LP(blockElement), type.size));
@@ -237,7 +238,7 @@ export class SemanticAnalyzer {
 			);
 		} else if (rule === Rules.NF_RULE) {
 			const idd = this.stack.pop();
-			let f = (idd?.obj as BlockElement).obj as BlockElement;
+			let f = (idd?.obj as BlockElement)?.obj as BlockElement;
 			if (!f) return;
 			f.kind = KindEnum.FUNCTION;
 			f.obj = new FUNCTION(undefined, undefined, this.scope.nFuncs, 0, 0);
@@ -247,7 +248,7 @@ export class SemanticAnalyzer {
 			const type = this.stack.pop();
 			const lp = this.stack.pop();
 			const idd = this.stack.pop();
-			const f = (idd?.obj as BlockElement).obj as BlockElement;
+			const f = (idd?.obj as BlockElement)?.obj as BlockElement;
 			if (!f || !type || !lp || !f.obj) return;
 			f.kind = KindEnum.FUNCTION;
 			f.obj = new FUNCTION(
@@ -266,7 +267,7 @@ export class SemanticAnalyzer {
 			if (!mt || !e || !e.obj) return;
 			const t = (e.obj as E).type;
 			if (!t || !TypeHelper.checkTypes(t, boolScalar)) {
-				new ExpectedBoolTypeError().print();
+				new ExpectedBoolTypeError().print(this.lexicalAnalyzer.line);
 			}
 		} else if (rule === Rules.U_IF_ELSE_U_RULE) {
 			const me = this.stack.pop();
@@ -275,7 +276,7 @@ export class SemanticAnalyzer {
 			if (!me || !mt || !e || !e.obj) return;
 			const t = (e.obj as E).type;
 			if (!t || !TypeHelper.checkTypes(t, boolScalar)) {
-				new ExpectedBoolTypeError().print();
+				new ExpectedBoolTypeError().print(this.lexicalAnalyzer.line);
 			}
 		} else if (rule === Rules.M_IF_ELSE_M_RULE) {
 			const me = this.stack.pop();
@@ -284,7 +285,7 @@ export class SemanticAnalyzer {
 			if (!me || !mt || !e || !e.obj) return;
 			const t = (e.obj as E).type;
 			if (!t || !TypeHelper.checkTypes(t, boolScalar)) {
-				new ExpectedBoolTypeError().print();
+				new ExpectedBoolTypeError().print(this.lexicalAnalyzer.line);
 			}
 		} else if (rule === Rules.M_WHILE_RULE) {
 			const mt = this.stack.pop();
@@ -293,7 +294,7 @@ export class SemanticAnalyzer {
 			if (!mt || !e || !e.obj || !mw) return;
 			const t = (e.obj as E).type;
 			if (!t || !TypeHelper.checkTypes(t, boolScalar)) {
-				new ExpectedBoolTypeError().print();
+				new ExpectedBoolTypeError().print(this.lexicalAnalyzer.line);
 			}
 		} else if (rule === Rules.M_DO_WHILE_RULE) {
 			const e = this.stack.pop();
@@ -301,7 +302,7 @@ export class SemanticAnalyzer {
 			if (!e || !e.obj || !mw) return;
 			const t = (e.obj as E).type;
 			if (!t || !TypeHelper.checkTypes(t, boolScalar)) {
-				new ExpectedBoolTypeError().print();
+				new ExpectedBoolTypeError().print(this.lexicalAnalyzer.line);
 			}
 		} else if (rule === Rules.E_AND_RULE) {
 			const l = this.stack.pop();
@@ -310,7 +311,7 @@ export class SemanticAnalyzer {
 			const t2 = (l?.obj as L).type;
 			if (!l || !e1 || !t1 || !t2) return;
 			if (!TypeHelper.checkTypes(t1, boolScalar) || !TypeHelper.checkTypes(t2, boolScalar)) {
-				new ExpectedBoolTypeError().print();
+				new ExpectedBoolTypeError().print(this.lexicalAnalyzer.line);
 			}
 			this.stack.push(new TokenAttribute(States.E, new E(boolScalar)));
 		} else if (rule === Rules.E_OR_RULE) {
@@ -320,7 +321,7 @@ export class SemanticAnalyzer {
 			const t2 = (l?.obj as L).type;
 			if (!l || !e1 || !t1 || !t2) return;
 			if (!TypeHelper.checkTypes(t1, boolScalar) || !TypeHelper.checkTypes(t2, boolScalar)) {
-				new ExpectedBoolTypeError().print();
+				new ExpectedBoolTypeError().print(this.lexicalAnalyzer.line);
 			}
 			this.stack.push(new TokenAttribute(States.E, new E(boolScalar)));
 		} else if (rule === Rules.E_L_RULE) {
@@ -334,7 +335,7 @@ export class SemanticAnalyzer {
 			const type2 = (r?.obj as R).type;
 			if (!r || !l1 || !type1 || !type2) return;
 			if (!TypeHelper.checkTypes(type1, type2)) {
-				new TypeMisMatchError().print();
+				new TypeMisMatchError().print(this.lexicalAnalyzer.line);
 			}
 			this.stack.push(new TokenAttribute(States.L, new L(boolScalar)));
 		} else if (rule === Rules.L_GREATER_THAN_RULE) {
@@ -344,7 +345,7 @@ export class SemanticAnalyzer {
 			const type2 = (r?.obj as R).type;
 			if (!r || !l1 || !type1 || !type2) return;
 			if (!TypeHelper.checkTypes(type1, type2)) {
-				new TypeMisMatchError().print();
+				new TypeMisMatchError().print(this.lexicalAnalyzer.line);
 			}
 			this.stack.push(new TokenAttribute(States.L, new L(boolScalar)));
 		} else if (rule === Rules.L_LESS_EQUAL_RULE) {
@@ -354,7 +355,7 @@ export class SemanticAnalyzer {
 			const type2 = (r?.obj as R).type;
 			if (!r || !l1 || !type1 || !type2) return;
 			if (!TypeHelper.checkTypes(type1, type2)) {
-				new TypeMisMatchError().print();
+				new TypeMisMatchError().print(this.lexicalAnalyzer.line);
 			}
 			this.stack.push(new TokenAttribute(States.L, new L(boolScalar)));
 		} else if (rule === Rules.L_GREATER_EQUAL_RULE) {
@@ -364,7 +365,7 @@ export class SemanticAnalyzer {
 			const type2 = (r?.obj as R).type;
 			if (!r || !l1 || !type1 || !type2) return;
 			if (!TypeHelper.checkTypes(type1, type2)) {
-				new TypeMisMatchError().print();
+				new TypeMisMatchError().print(this.lexicalAnalyzer.line);
 			}
 			this.stack.push(new TokenAttribute(States.L, new L(boolScalar)));
 		} else if (rule === Rules.L_EQUAL_EQUAL_RULE) {
@@ -374,7 +375,7 @@ export class SemanticAnalyzer {
 			const type2 = (r?.obj as R).type;
 			if (!r || !l1 || !type1 || !type2) return;
 			if (!TypeHelper.checkTypes(type1, type2)) {
-				new TypeMisMatchError().print();
+				new TypeMisMatchError().print(this.lexicalAnalyzer.line);
 			}
 			this.stack.push(new TokenAttribute(States.L, new L(boolScalar)));
 		} else if (rule === Rules.L_NOT_EQUAL_RULE) {
@@ -384,76 +385,76 @@ export class SemanticAnalyzer {
 			const type2 = (r?.obj as R).type;
 			if (!r || !l1 || !type1 || !type2) return;
 			if (!TypeHelper.checkTypes(type1, type2)) {
-				new TypeMisMatchError().print();
+				new TypeMisMatchError().print(this.lexicalAnalyzer.line);
 			}
 			this.stack.push(new TokenAttribute(States.L, new L(boolScalar)));
 		} else if (rule === Rules.L_R_RULE) {
 			const r = this.stack.pop();
-			const l = new TokenAttribute(States.L, new L((r?.obj as R).type));
+			const l = new TokenAttribute(States.L, new L((r?.obj as R)?.type));
 			this.stack.push(l);
 		} else if (rule === Rules.R_PLUS_RULE) {
 			const y = this.stack.pop();
 			const r1 = this.stack.pop();
-			const type1 = (r1?.obj as R).type;
-			const type2 = (y?.obj as Y).type;
+			const type1 = (r1?.obj as R)?.type;
+			const type2 = (y?.obj as Y)?.type;
 			if (!y || !r1 || !type1 || !type2) return;
 			if (!TypeHelper.checkTypes(type1, type2)) {
-				new TypeMisMatchError().print();
+				new TypeMisMatchError().print(this.lexicalAnalyzer.line);
 			}
 			if (!TypeHelper.checkTypes(type1, intScalar) && !TypeHelper.checkTypes(type1, stringScalar)) {
-				new InvalidTypeError().print();
+				new InvalidTypeError().print(this.lexicalAnalyzer.line);
 			}
 			this.stack.push(new TokenAttribute(States.R, new R(type1)));
 		} else if (rule === Rules.R_MINUS_RULE) {
 			const y = this.stack.pop();
 			const r1 = this.stack.pop();
-			const type1 = (r1?.obj as R).type;
+			const type1 = (r1?.obj as R)?.type;
 			const type2 = (y?.obj as Y).type;
 			if (!y || !r1 || !type1 || !type2) return;
 			if (!TypeHelper.checkTypes(type1, type2)) {
-				new TypeMisMatchError().print();
+				new TypeMisMatchError().print(this.lexicalAnalyzer.line);
 			}
 			if (!TypeHelper.checkTypes(type1, intScalar)) {
-				new InvalidTypeError().print();
+				new InvalidTypeError().print(this.lexicalAnalyzer.line);
 			}
 			this.stack.push(new TokenAttribute(States.R, new R(type1)));
 		} else if (rule === Rules.R_Y_RULE) {
 			const y = this.stack.pop();
-			const r = new TokenAttribute(States.R, new R((y?.obj as Y).type));
+			const r = new TokenAttribute(States.R, new R((y?.obj as Y)?.type));
 			this.stack.push(r);
 		} else if (rule === Rules.Y_TIMES_RULE) {
 			const f = this.stack.pop();
 			const y1 = this.stack.pop();
-			const type1 = (y1?.obj as Y).type;
-			const type2 = (f?.obj as F).type;
+			const type1 = (y1?.obj as Y)?.type;
+			const type2 = (f?.obj as F)?.type;
 			if (!f || !y1 || !type1 || !type2) return;
 			if (!TypeHelper.checkTypes(type1, type2)) {
-				new TypeMisMatchError().print();
+				new TypeMisMatchError().print(this.lexicalAnalyzer.line);
 			}
 			if (!TypeHelper.checkTypes(type1, intScalar)) {
-				new InvalidTypeError().print();
+				new InvalidTypeError().print(this.lexicalAnalyzer.line);
 			}
 			this.stack.push(new TokenAttribute(States.Y, new Y(type1)));
 		} else if (rule === Rules.Y_DIVIDE_RULE) {
 			const f = this.stack.pop();
 			const y1 = this.stack.pop();
-			const type1 = (y1?.obj as Y).type;
-			const type2 = (f?.obj as F).type;
+			const type1 = (y1?.obj as Y)?.type;
+			const type2 = (f?.obj as F)?.type;
 			if (!f || !y1 || !type1 || !type2) return;
 			if (!TypeHelper.checkTypes(type1, type2)) {
-				new TypeMisMatchError().print();
+				new TypeMisMatchError().print(this.lexicalAnalyzer.line);
 			}
 			if (!TypeHelper.checkTypes(type1, intScalar)) {
-				new InvalidTypeError().print();
+				new InvalidTypeError().print(this.lexicalAnalyzer.line);
 			}
 			this.stack.push(new TokenAttribute(States.Y, new Y(type1)));
 		} else if (rule === Rules.Y_F_RULE) {
 			const f = this.stack.pop();
-			const y = new TokenAttribute(States.Y, new Y((f?.obj as F).type));
+			const y = new TokenAttribute(States.Y, new Y((f?.obj as F)?.type));
 			this.stack.push(y);
 		} else if (rule === Rules.F_LV_RULE) {
 			const lv = this.stack.pop();
-			const type = (lv?.obj as LV).type;
+			const type = (lv?.obj as LV)?.type;
 			if (!lv || !type) return;
 			this.stack.push(new TokenAttribute(States.F, new F(type)));
 		} else if (rule === Rules.F_LEFT_PLUS_PLUS_RULE) {
@@ -461,7 +462,7 @@ export class SemanticAnalyzer {
 			const type = (lv?.obj as LV).type;
 			if (!lv || !type) return;
 			if (!TypeHelper.checkTypes(type, intScalar)) {
-				new InvalidTypeError().print();
+				new InvalidTypeError().print(this.lexicalAnalyzer.line);
 			}
 			this.stack.push(new TokenAttribute(States.F, new F(type)));
 		} else if (rule === Rules.F_LEFT_MINUS_MINUS_RULE) {
@@ -469,7 +470,7 @@ export class SemanticAnalyzer {
 			const type = (lv?.obj as LV).type;
 			if (!lv || !type) return;
 			if (!TypeHelper.checkTypes(type, intScalar)) {
-				new InvalidTypeError().print();
+				new InvalidTypeError().print(this.lexicalAnalyzer.line);
 			}
 			this.stack.push(new TokenAttribute(States.F, new F(type)));
 		} else if (rule === Rules.F_RIGHT_PLUS_PLUS_RULE) {
@@ -477,7 +478,7 @@ export class SemanticAnalyzer {
 			const type = (lv?.obj as LV).type;
 			if (!lv || !type) return;
 			if (!TypeHelper.checkTypes(type, intScalar)) {
-				new InvalidTypeError().print();
+				new InvalidTypeError().print(this.lexicalAnalyzer.line);
 			}
 			this.stack.push(new TokenAttribute(States.F, new F(type)));
 		} else if (rule === Rules.F_RIGHT_MINUS_MINUS_RULE) {
@@ -485,7 +486,7 @@ export class SemanticAnalyzer {
 			const type = (lv?.obj as LV).type;
 			if (!lv || !type) return;
 			if (!TypeHelper.checkTypes(type, intScalar)) {
-				new InvalidTypeError().print();
+				new InvalidTypeError().print(this.lexicalAnalyzer.line);
 			}
 			this.stack.push(new TokenAttribute(States.F, new F(type)));
 		} else if (rule === Rules.F_PARENTHESIS_E_RULE) {
@@ -498,7 +499,7 @@ export class SemanticAnalyzer {
 			const type = (f1?.obj as F).type;
 			if (!f1 || !type) return;
 			if (!TypeHelper.checkTypes(type, intScalar)) {
-				new InvalidTypeError().print();
+				new InvalidTypeError().print(this.lexicalAnalyzer.line);
 			}
 			this.stack.push(new TokenAttribute(States.F, new F(type)));
 		} else if (rule === Rules.F_NOT_F_RULE) {
@@ -506,7 +507,7 @@ export class SemanticAnalyzer {
 			const type = (f1?.obj as F).type;
 			if (!f1 || !type) return;
 			if (!TypeHelper.checkTypes(type, boolScalar)) {
-				new InvalidTypeError().print();
+				new InvalidTypeError().print(this.lexicalAnalyzer.line);
 			}
 			this.stack.push(new TokenAttribute(States.F, new F(type)));
 		} else if (rule === Rules.F_TRUE_RULE) {
@@ -532,7 +533,7 @@ export class SemanticAnalyzer {
 			if (!id || !lv || !type) return;
 			if (type.kind !== KindEnum.STRUCT_TYPE) {
 				if (type.kind !== KindEnum.UNIVERSAL) {
-					new NotStructError().print();
+					new NotStructError().print(this.lexicalAnalyzer.line);
 				}
 				lv0 = new TokenAttribute(States.LV, new LV(universalScalar));
 			} else {
@@ -544,7 +545,7 @@ export class SemanticAnalyzer {
 					blockElement = blockElement.type?.next as Field;
 				}
 				if (!blockElement) {
-					new NoDeclError().print();
+					new NoDeclError().print(this.lexicalAnalyzer.line);
 					lv0 = new TokenAttribute(States.LV, new LV(universalScalar));
 				} else {
 					lv0 = new TokenAttribute(States.LV, new LV((blockElement.type?.obj as T).type));
@@ -562,7 +563,7 @@ export class SemanticAnalyzer {
 				lv0 = new TokenAttribute(States.LV, new LV(charScalar));
 			} else if (type.kind !== KindEnum.ARRAY_TYPE) {
 				if (type.kind !== KindEnum.UNIVERSAL) {
-					new NotArrayError().print();
+					new NotArrayError().print(this.lexicalAnalyzer.line);
 				}
 				lv0 = new TokenAttribute(States.LV, new LV(universalScalar));
 			} else {
@@ -570,7 +571,7 @@ export class SemanticAnalyzer {
 			}
 
 			if (!TypeHelper.checkTypes((e.obj as E).type!, intScalar)) {
-				new InvalidTypeError().print();
+				new InvalidTypeError().print(this.lexicalAnalyzer.line);
 			}
 
 			this.stack.push(lv0);
@@ -580,7 +581,7 @@ export class SemanticAnalyzer {
 			if (!idu || !blockElement) return;
 			if (blockElement.kind !== KindEnum.VAR && blockElement.kind !== KindEnum.PARAM) {
 				if (blockElement.kind !== KindEnum.UNIVERSAL) {
-					new NotVarError().print();
+					new NotVarError().print(this.lexicalAnalyzer.line);
 				}
 				this.stack.push(new TokenAttribute(States.LV, new LV(universalScalar)));
 			} else {
@@ -614,11 +615,11 @@ export class SemanticAnalyzer {
 			if (!mc.err) {
 				const blockElement = mc.param;
 				if (!blockElement) {
-					new TooManyArgsError().print();
+					new TooManyArgsError().print(this.lexicalAnalyzer.line);
 					(le.obj as LE).err = true;
 				} else {
 					if (!type || !TypeHelper.checkTypes(type, (blockElement.obj as Param).type!)) {
-						new ParamTypeError().print();
+						new ParamTypeError().print(this.lexicalAnalyzer.line);
 					}
 					(le.obj as LE).param = blockElement.next;
 					(le.obj as LE).n = this.n + 1;
@@ -636,11 +637,11 @@ export class SemanticAnalyzer {
 			if (!le1.err) {
 				const blockElement = le1.param as BlockElement;
 				if (!blockElement) {
-					new TooManyArgsError().print();
+					new TooManyArgsError().print(this.lexicalAnalyzer.line);
 					(le0.obj as LE).err = true;
 				} else {
 					if (!TypeHelper.checkTypes((e.obj as E).type!, (blockElement.obj as Param).type!)) {
-						new ParamTypeError().print();
+						new ParamTypeError().print(this.lexicalAnalyzer.line);
 					}
 					(le0.obj as LE).param = blockElement.next;
 					(le0.obj as LE).n = this.n + 1;
@@ -660,9 +661,9 @@ export class SemanticAnalyzer {
 
 			if (!leObj.err) {
 				if (0 <= leObj.n - 1 && leObj.n - 1 < f.nParams) {
-					new TooFewArgsError().print();
+					new TooFewArgsError().print(this.lexicalAnalyzer.line);
 				} else if (leObj.n - 1 > f.nParams) {
-					new TooManyArgsError().print();
+					new TooManyArgsError().print(this.lexicalAnalyzer.line);
 				}
 			}
 			this.stack.push(tokenAttribute);
@@ -689,7 +690,7 @@ export class SemanticAnalyzer {
 			const lv = this.stack.pop();
 			if (!e || !lv) return;
 			if (!TypeHelper.checkTypes((e.obj as E).type!, (lv.obj as LV).type!)) {
-				new TypeMisMatchError().print();
+				new TypeMisMatchError().print(this.lexicalAnalyzer.line);
 			}
 			const e0 = new TokenAttribute(States.E, new F((e.obj as E).type));
 			this.stack.push(e0);
